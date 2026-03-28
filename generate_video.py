@@ -21,7 +21,7 @@ FRAME_DIR = "/tmp/zenen_video_frames"
 
 W, H = 1080, 1920
 FPS = 30
-TOTAL_SECONDS = 15
+TOTAL_SECONDS = 20
 TOTAL_FRAMES = FPS * TOTAL_SECONDS
 
 FONT_PATH = "/usr/share/fonts/opentype/ipafont-gothic/ipagp.ttf"
@@ -234,6 +234,8 @@ def generate_frames():
     font_small = ImageFont.truetype(FONT_PATH, 26)
     font_large = ImageFont.truetype(FONT_PATH, 68)
     font_tag = ImageFont.truetype(FONT_PATH, 22)
+    font_info = ImageFont.truetype(FONT_PATH, 21)
+    font_info_small = ImageFont.truetype(FONT_PATH, 18)
 
     # 桜花びらパラメータ
     random.seed(42)
@@ -254,11 +256,11 @@ def generate_frames():
     print(f"フレーム生成中... ({TOTAL_FRAMES}フレーム)")
 
     # ── タイムライン定義（秒） ──
-    # 0.0 - 4.0  : シーン1 写真1全面 + オープニングテキスト
-    # 4.0 - 5.0  : クロスフェード (写真1→写真2)
+    # 0.0 -  4.0 : シーン1 写真1全面 + オープニングテキスト
+    # 4.0 -  5.0 : クロスフェード (写真1→写真2)
     # 5.0 - 10.0 : シーン2 写真2全面 + テキスト
     # 10.0 - 11.0: クロスフェード (写真2→暗転)
-    # 11.0 - 15.0: エンディング（写真2暗め + 店名）
+    # 11.0 - 20.0: エンディング（キャッチ + 店舗情報）
 
     for fi in range(TOTAL_FRAMES):
         t = fi / FPS  # 秒数
@@ -284,7 +286,7 @@ def generate_frames():
                                  zoom_start=1.06, zoom_end=1.0, pan_x=-20, pan_y=15)
         else:
             # エンディング: 写真2をゆっくり
-            progress2 = (t - 5.0) / 10.0
+            progress2 = (t - 5.0) / 15.0
             bg = ken_burns_cover(photo2, W, H, min(progress2, 1.0),
                                  zoom_start=1.06, zoom_end=1.0, pan_x=-20, pan_y=15)
 
@@ -304,17 +306,17 @@ def generate_frames():
         elif t < 11.0:
             cross_t = (t - 10.0) / 1.0
             ov1 = create_gradient_overlay(bg, "top_bottom", 0.55)
-            ov2 = create_gradient_overlay(bg, "full", 0.6)
+            ov2 = create_gradient_overlay(bg, "full", 0.7)
             frame = Image.blend(ov1, ov2, ease_in_out(cross_t))
         else:
-            frame = create_gradient_overlay(bg, "full", 0.65)
+            frame = create_gradient_overlay(bg, "full", 0.72)
 
         frame = frame.convert("RGBA")
 
         # ── 桜花びら ──
         petal_alpha = 0.7
-        if t > 13.0:
-            petal_alpha = 0.7 * (1.0 - ease_in_out((t - 13.0) / 2.0))
+        if t > 18.0:
+            petal_alpha = 0.7 * (1.0 - ease_in_out((t - 18.0) / 2.0))
         frame = draw_sakura_petals(frame, petals, t, petal_alpha)
 
         # ── テキストレイヤー（全て滑らかなアルファフェード） ──
@@ -359,21 +361,48 @@ def generate_frames():
         frame = draw_line_alpha(frame, H - 250, 50, GOLD_COLOR, a)
         frame = draw_centered_text_alpha(frame, "目で愉しみ、舌で味わう", H - 220, font_tag, SUB_TEXT_COLOR, a)
 
-        # --- エンディングテキスト (11-15秒) ---
-        a = fade_value(t, 11.2, 14.8, fade_dur=1.5)
-        frame = draw_line_alpha(frame, H // 2 - 140, 70, GOLD_COLOR, a)
-        frame = draw_centered_text_alpha(frame, "「いま」しか届けられない", H // 2 - 110, font_sub, TEXT_COLOR, a)
-        frame = draw_centered_text_alpha(frame, "味わいを。", H // 2 - 60, font_sub, TEXT_COLOR, a)
-        frame = draw_line_alpha(frame, H // 2, 70, GOLD_COLOR, a)
+        # --- エンディング (11-20秒) ---
 
-        # 店名（少し遅れて）
-        a = fade_value(t, 12.0, 14.8, fade_dur=1.5)
-        frame = draw_centered_text_alpha(frame, "禅 園", H // 2 + 60, font_large, GOLD_COLOR, a)
-        frame = draw_centered_text_alpha(frame, "心 斎 橋", H // 2 + 145, font_sub, SUB_TEXT_COLOR, a)
+        # キャッチコピー 11.2〜14.5秒
+        a = fade_value(t, 11.2, 14.5, fade_dur=1.5)
+        frame = draw_line_alpha(frame, 460, 70, GOLD_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "「いま」しか届けられない", 490, font_sub, TEXT_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "味わいを。", 535, font_sub, TEXT_COLOR, a)
+        frame = draw_line_alpha(frame, 590, 70, GOLD_COLOR, a)
 
-        # ハッシュタグ
-        a = fade_value(t, 12.8, 14.5, fade_dur=1.2)
-        frame = draw_centered_text_alpha(frame, "#禅園  #旬を届ける  #紫紺コース", H // 2 + 240, font_tag, SUB_TEXT_COLOR, a)
+        # 店名 12.0〜19.5秒
+        a = fade_value(t, 12.0, 19.5, fade_dur=1.5)
+        frame = draw_centered_text_alpha(frame, "心斎橋  禅 園", 650, font_large, GOLD_COLOR, a)
+
+        # 装飾線（店名の下）
+        a = fade_value(t, 12.5, 19.5, fade_dur=1.5)
+        frame = draw_line_alpha(frame, 740, 120, GOLD_COLOR, a)
+
+        # 住所 13.0〜19.5秒
+        a = fade_value(t, 13.0, 19.5, fade_dur=1.5)
+        frame = draw_centered_text_alpha(frame, "〒542-0086", 780, font_info_small, SUB_TEXT_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "大阪府大阪市中央区西心斎橋1-3-3", 810, font_info, SUB_TEXT_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "オー・エム・ホテル日航ビルB2F", 845, font_info, SUB_TEXT_COLOR, a)
+
+        # 電話番号 13.5〜19.5秒
+        a = fade_value(t, 13.5, 19.5, fade_dur=1.5)
+        frame = draw_line_alpha(frame, 895, 40, GOLD_COLOR, a * 0.5)
+        frame = draw_centered_text_alpha(frame, "06-6241-7027", 915, font_sub, TEXT_COLOR, a)
+
+        # 営業時間 14.0〜19.5秒
+        a = fade_value(t, 14.0, 19.5, fade_dur=1.5)
+        frame = draw_line_alpha(frame, 970, 40, GOLD_COLOR, a * 0.5)
+        frame = draw_centered_text_alpha(frame, "営 業 時 間", 995, font_info_small, GOLD_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "ランチ  11:30〜14:45（L.O.14:00）", 1030, font_info, SUB_TEXT_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "ディナー  17:00〜22:00（L.O.21:00）", 1065, font_info, SUB_TEXT_COLOR, a)
+
+        # 定休日 14.5〜19.5秒
+        a = fade_value(t, 14.5, 19.5, fade_dur=1.5)
+        frame = draw_centered_text_alpha(frame, "定休日 : 不定休（施設に準ずる）", 1110, font_info_small, SUB_TEXT_COLOR, a)
+
+        # ハッシュタグ 15.5〜19.0秒
+        a = fade_value(t, 15.5, 19.0, fade_dur=1.2)
+        frame = draw_centered_text_alpha(frame, "#禅園  #心斎橋  #旬を届ける  #紫紺コース", 1200, font_tag, SUB_TEXT_COLOR, a)
 
         # ── フレーム保存 ──
         frame_rgb = frame.convert("RGB")
