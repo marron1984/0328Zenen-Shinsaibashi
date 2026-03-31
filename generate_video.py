@@ -26,6 +26,11 @@ TOTAL_FRAMES = FPS * TOTAL_SECONDS
 
 FONT_PATH = "/usr/share/fonts/opentype/ipafont-gothic/ipagp.ttf"
 
+# 明朝体フォント（店名・キャッチコピー等に使用）
+FONT_MINCHO = "/usr/share/fonts/truetype/shippori/ShipporiMinchoB1-Medium.ttf"
+FONT_MINCHO_SEMIBOLD = "/usr/share/fonts/truetype/shippori/ShipporiMinchoB1-SemiBold.ttf"
+FONT_MINCHO_BOLD = "/usr/share/fonts/truetype/shippori/ShipporiMinchoB1-Bold.ttf"
+
 # カラー
 TEXT_COLOR = (240, 235, 225)
 SUB_TEXT_COLOR = (180, 168, 150)
@@ -227,15 +232,15 @@ def generate_frames():
         print("ERROR: 画像が見つかりません")
         return
 
-    # フォント
-    font_hero = ImageFont.truetype(FONT_PATH, 56)
-    font_title = ImageFont.truetype(FONT_PATH, 44)
-    font_sub = ImageFont.truetype(FONT_PATH, 30)
-    font_small = ImageFont.truetype(FONT_PATH, 26)
-    font_large = ImageFont.truetype(FONT_PATH, 68)
-    font_tag = ImageFont.truetype(FONT_PATH, 22)
-    font_info = ImageFont.truetype(FONT_PATH, 21)
-    font_info_small = ImageFont.truetype(FONT_PATH, 18)
+    # フォント（明朝体をメインに、情報系はゴシック）
+    font_hero = ImageFont.truetype(FONT_MINCHO_SEMIBOLD, 56)      # キャッチコピー
+    font_title = ImageFont.truetype(FONT_MINCHO_SEMIBOLD, 44)     # セクションタイトル
+    font_sub = ImageFont.truetype(FONT_MINCHO, 30)                # サブテキスト
+    font_small = ImageFont.truetype(FONT_MINCHO, 26)              # 本文
+    font_large = ImageFont.truetype(FONT_MINCHO_BOLD, 68)         # 店名（大）
+    font_tag = ImageFont.truetype(FONT_PATH, 22)                  # ハッシュタグ（ゴシック）
+    font_info = ImageFont.truetype(FONT_PATH, 21)                 # 店舗情報（ゴシック）
+    font_info_small = ImageFont.truetype(FONT_PATH, 18)           # 小さい情報（ゴシック）
 
     # 桜花びらパラメータ
     random.seed(42)
@@ -335,10 +340,10 @@ def generate_frames():
         a = fade_value(t, 1.5, 4.0, fade_dur=1.0)
         frame = draw_line_alpha(frame, H - 360, 100, GOLD_COLOR, a)
 
-        # 「禅園 / 紫紺コース」 2.0〜3.8秒
+        # 「禅園 / 卯月の懐石コース」 2.0〜3.8秒
         a = fade_value(t, 2.0, 4.0, fade_dur=1.0)
         frame = draw_centered_text_alpha(frame, "禅 園", H - 330, font_sub, GOLD_COLOR, a)
-        frame = draw_centered_text_alpha(frame, "紫紺コース ・ 前菜", H - 285, font_small, SUB_TEXT_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "卯月の懐石コース ・ 前菜", H - 285, font_small, SUB_TEXT_COLOR, a)
 
         # --- シーン2テキスト (5-10秒) ---
         # 上部キャッチ
@@ -402,7 +407,7 @@ def generate_frames():
 
         # ハッシュタグ 15.5〜19.0秒
         a = fade_value(t, 15.5, 19.0, fade_dur=1.2)
-        frame = draw_centered_text_alpha(frame, "#禅園  #心斎橋  #旬を届ける  #紫紺コース", 1200, font_tag, SUB_TEXT_COLOR, a)
+        frame = draw_centered_text_alpha(frame, "#禅園  #心斎橋  #旬を届ける  #懐石料理", 1200, font_tag, SUB_TEXT_COLOR, a)
 
         # ── フレーム保存 ──
         frame_rgb = frame.convert("RGB")
